@@ -1,40 +1,27 @@
 "use client";
-import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { usePersistedState } from "./usePersistedState";
 
-function NumberInput({ name, initial }: { name: string; initial: number }) {
-  const [value, setValue] = usePersistedState(name, initial);
-
+function NumberInput({ name, props }: { name: string; props: any }) {
   return (
     <>
       <div className="inputBox">
         <label>
           {name}:<br />
-          <input
-            type="text"
-            onChange={(e) => setValue(Number(e.target.value))}
-            value={value}
-          ></input>
+          <input type="number" {...props} />
         </label>
       </div>
     </>
   );
 }
 
-function TextInput({ name, initial }: { name: string; initial: string }) {
-  const [value, setValue] = usePersistedState(name, initial);
-
+function TextInput({ name, props }: { name: string; props: any }) {
   return (
     <>
       <div className="inputBox">
         <label>
           {name}:<br />
-          <input
-            type="text"
-            onChange={(e) => setValue(e.target.value)}
-            value={value}
-          ></input>
+          <input {...props} />
         </label>
       </div>
     </>
@@ -42,28 +29,31 @@ function TextInput({ name, initial }: { name: string; initial: string }) {
 }
 
 function Building({
-  index,
-  type,
-  checked,
-  effect,
-}: { index: number } & Building) {
+  buildingProps,
+  checkboxProps,
+  harvestEffectProps,
+}: {
+  buildingProps: any;
+  checkboxProps: any;
+  harvestEffectProps: any;
+}) {
   return (
     <>
       <div className="gridBox">
         <label>
           Building:
           <br />
-          <input type="text" value={type} readOnly></input>
+          <input {...buildingProps} />
         </label>
         <label>
           Damaged:
           <br />
-          <input type="checkbox" checked={checked} readOnly></input>
+          <input type={"checkbox"} {...checkboxProps} />
         </label>
         <label>
           Harvest Effect:
           <br />
-          <input type="text" value={effect} readOnly></input>
+          <input {...harvestEffectProps} />
         </label>
       </div>
       <br />
@@ -71,63 +61,63 @@ function Building({
   );
 }
 
-type Building = {
-  type: string;
-  checked: boolean;
-  effect: string;
-};
-
 export default function Home() {
-  const [buildings, setBuildings] = usePersistedState<Building[]>("buildings", [
-    {
-      checked: false,
-      type: "Home",
-      effect: "something",
-    },
-    {
-      checked: true,
-      type: "Other",
-      effect: "something else",
-    },
-  ]);
+  const [buildings, setBuildings] = usePersistedState<any>("sheet", {});
+  const { register, handleSubmit } = useForm({ defaultValues: buildings });
 
-  const zero: number = 0;
+  const onSubmit = (data: any) => {
+    console.log(data);
+    setBuildings(data);
+  };
 
   return (
     <>
-      <div className="gridHeader">
-        <div className="gridBox">
-          <TextInput name="Settlement Name" initial="" />
-          <TextInput name="Player Name" initial="" />
-          <TextInput name="Games played" initial="0" />
+      <form onChange={handleSubmit(onSubmit)}>
+        <div className="gridHeader">
+          <div className="gridBox">
+            <TextInput
+              name="Settlement Name"
+              props={{ ...register("settlement") }}
+            />
+            <TextInput name="Player Name" props={{ ...register("player") }} />
+            <TextInput
+              name="Games played"
+              props={{ ...register("gamesPlayed") }}
+            />
+          </div>
+
+          <div className="gridBox">
+            <NumberInput name="Fame" props={{ ...register("fame") }} />
+            <NumberInput name="Food" props={{ ...register("food") }} />
+            <NumberInput
+              name="Population"
+              props={{ ...register("population") }}
+            />
+            <NumberInput
+              name="Materials"
+              props={{ ...register("materials") }}
+            />
+            <NumberInput name="Wealth" props={{ ...register("wealth") }} />
+            <NumberInput name="Defense" props={{ ...register("defense") }} />
+          </div>
+
+          <div className="gridBox gridHigh">
+            <TextInput name="Features" props={{ ...register("features") }} />
+          </div>
         </div>
 
-        <div className="gridBox">
-          <NumberInput name="Fame" initial={zero} />
-          <NumberInput name="Food" initial={zero} />
-          <NumberInput name="Population" initial={zero} />
-          <NumberInput name="Materials" initial={zero} />
-          <NumberInput name="Wealth" initial={zero} />
-          <NumberInput name="Defense" initial={zero} />
+        <hr />
+        <div id="buildings">
+          {[...Array(10).keys()].map((key) => (
+            <Building
+              key={key}
+              buildingProps={{ ...register(`building-${key}`) }}
+              checkboxProps={{ ...register(`checkbox-${key}`) }}
+              harvestEffectProps={{ ...register(`harvestEffect-${key}`) }}
+            />
+          ))}
         </div>
-
-        <div className="gridBox gridHigh">
-          <TextInput name="Features" initial="" />
-        </div>
-      </div>
-
-      <hr />
-      <div id="buildings">
-        {buildings.map((value, index) => (
-          <Building
-            key={index}
-            index={index}
-            checked={value.checked}
-            type={value.type}
-            effect={value.effect}
-          />
-        ))}
-      </div>
+      </form>
     </>
   );
 }
