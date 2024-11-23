@@ -3,7 +3,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { usePersistedState } from "./usePersistedState";
 
-function SavedInput<T>({ name, initial }: { name: string; initial: T }) {
+function NumberInput({ name, initial }: { name: string; initial: number }) {
   const [value, setValue] = usePersistedState(name, initial);
 
   return (
@@ -13,8 +13,8 @@ function SavedInput<T>({ name, initial }: { name: string; initial: T }) {
           {name}:<br />
           <input
             type="text"
-            onChange={(e) => setValue(e.target.value as T)}
-            value={value as string}
+            onChange={(e) => setValue(Number(e.target.value))}
+            value={value}
           ></input>
         </label>
       </div>
@@ -41,20 +41,29 @@ function TextInput({ name, initial }: { name: string; initial: string }) {
   );
 }
 
-function Building({ index, type, effect }: { index: number } & Building) {
+function Building({
+  index,
+  type,
+  checked,
+  effect,
+}: { index: number } & Building) {
   return (
     <>
       <div className="gridBox">
         <label>
           Building:
           <br />
-          <input type="text" value={type}></input>
+          <input type="text" value={type} readOnly></input>
         </label>
-        <br />
+        <label>
+          Damaged:
+          <br />
+          <input type="checkbox" checked={checked} readOnly></input>
+        </label>
         <label>
           Harvest Effect:
           <br />
-          <input type="text" value={effect}></input>
+          <input type="text" value={effect} readOnly></input>
         </label>
       </div>
       <br />
@@ -63,45 +72,47 @@ function Building({ index, type, effect }: { index: number } & Building) {
 }
 
 type Building = {
-  key: number;
   type: string;
+  checked: boolean;
   effect: string;
 };
 
 export default function Home() {
   const [buildings, setBuildings] = usePersistedState<Building[]>("buildings", [
     {
-      key: 0,
+      checked: false,
       type: "Home",
       effect: "something",
     },
     {
-      key: 1,
+      checked: true,
       type: "Other",
       effect: "something else",
     },
   ]);
 
+  const zero: number = 0;
+
   return (
     <>
       <div className="gridHeader">
         <div className="gridBox">
-          <SavedInput name="Settlement Name" initial="" />
-          <SavedInput name="Player Name" initial="" />
-          <SavedInput name="Games played" initial="0" />
+          <TextInput name="Settlement Name" initial="" />
+          <TextInput name="Player Name" initial="" />
+          <TextInput name="Games played" initial="0" />
         </div>
 
         <div className="gridBox">
-          <SavedInput name="Fame" initial="0" />
-          <SavedInput name="Food" initial="0" />
-          <SavedInput name="Population" initial="0" />
-          <SavedInput name="Materials" initial="0" />
-          <SavedInput name="Wealth" initial="0" />
-          <SavedInput name="Defense" initial="0" />
+          <NumberInput name="Fame" initial={zero} />
+          <NumberInput name="Food" initial={zero} />
+          <NumberInput name="Population" initial={zero} />
+          <NumberInput name="Materials" initial={zero} />
+          <NumberInput name="Wealth" initial={zero} />
+          <NumberInput name="Defense" initial={zero} />
         </div>
 
         <div className="gridBox gridHigh">
-          <SavedInput name="Features" initial="" />
+          <TextInput name="Features" initial="" />
         </div>
       </div>
 
@@ -110,7 +121,8 @@ export default function Home() {
         {buildings.map((value, index) => (
           <Building
             key={index}
-            index={value.key}
+            index={index}
+            checked={value.checked}
             type={value.type}
             effect={value.effect}
           />
